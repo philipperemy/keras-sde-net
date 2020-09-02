@@ -9,5 +9,5 @@ Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network 
 
 
 <center>
-<p>Implementation is in progress!</p>
+<p>Implementation is in progress! Expected date of completion: Mid September.</p>
 </center>
