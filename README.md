@@ -11,7 +11,7 @@ Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network 
 
 ```bash
 virtualenv -p python3 venv && source venv/bin/activate # optional but recommended.
-pip install -e . # install the package.
+pip install -r requirements.txt && pip install -e . # install the package.
 ```
 
 ## Training & Evaluation
@@ -27,7 +27,7 @@ python sdenet/train/resnet_mnist.py
 Evaluation:
 
 ```bash
-python sdenet/eval/test_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset mnist --out_dataset svhn
+python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset mnist --out_dataset svhn
 ```
 
 Training SDE-Net:
@@ -38,6 +38,6 @@ python sdenet/train/sdenet_mnist.py
 
 Evaluation:
 
-```
-python sdenet/eval/test_detection.py --pre_trained_net save_sdenet_mnist/final_model --network sdenet --dataset mnist --out_dataset svhn
+```bash
+python sdenet/eval/eval_detection.py --pre_trained_net save_sdenet_mnist/final_model.h5 --network sdenet --dataset mnist --out_dataset svhn
 ```

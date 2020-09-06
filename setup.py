@@ -10,6 +10,10 @@ setup(
     long_description_content_type='text/markdown',
     long_description=open('README.md').read(),
     packages=find_packages(),
-    install_requires=open('requirements.txt').read().strip().split('\n'),
+    install_requires=[
+        'numpy==1.19.1',
+        'tensorflow==2.3.0',
+        'tensorflow_addons==0.11.2'
+    ],
     python_requires='>=3',
 )
