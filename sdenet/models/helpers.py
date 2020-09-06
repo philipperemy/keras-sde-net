@@ -1,0 +1,65 @@
+import pickle
+from pathlib import Path
+
+import numpy as np
+import tensorflow as tf
+import tensorflow_addons as tfa
+from tensorflow.keras import initializers
+from tensorflow.keras.layers import Dense, Conv2D
+from tensorflow.keras.models import Model
+from tensorflow.python.keras.regularizers import l2
+
+
+def fc(num_units, activation=None):
+    return Dense(
+        units=num_units,
+        kernel_initializer=initializers.RandomNormal(stddev=1e-3),
+        bias_initializer=initializers.Zeros(),
+        activation=activation
+    )
+
+
+def conv3x3(out_planes, stride=1):
+    # if padding=x, then add a ZeroPadding2D((x,x)) layer
+    return Conv2D(filters=out_planes, strides=stride, kernel_size=3, padding='same', use_bias=False,
+                  kernel_initializer='he_normal', bias_initializer='zeros')
+
+
+def conv1x1(out_planes, stride=1):
+    # if padding=x, then add a ZeroPadding2D((x,x)) layer
+    return Conv2D(out_planes, kernel_size=1, strides=(stride, stride), use_bias=False,
+                  kernel_initializer='he_normal', bias_initializer='zeros')
+
+
+def norm(dim):
+    # https://www.tensorflow.org/addons/tutorials/layers_normalizations
+    num_groups = min(32, dim)
+    return tfa.layers.GroupNormalization(groups=num_groups, axis=-1)
+
+
+def set_seed(random_seed=123):
+    np.random.seed(random_seed)
+    tf.random.set_seed(random_seed)
+
+
+def save_weights(d: Model, filename):
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
+    with open(filename, 'wb') as w:
+        pickle.dump(d.get_weights(), w)
+
+
+def load_weights(d: Model, filename):
+    assert Path(filename).exists()
+    with open(filename, 'rb') as r:
+        d.set_weights(pickle.load(r))
+
+
+def add_l2_weight_decay(net: Model, weights_decay=5e-4):
+    reg = l2(weights_decay)
+    for layer in net.layers:
+        if isinstance(layer, Model):
+            add_l2_weight_decay(layer, weights_decay)
+        for attr in ['kernel_regularizer', 'bias_regularizer']:
+            if hasattr(layer, attr) and layer.trainable:
+                print(f'Set l2 regularizer to layer {layer.name} : L2({weights_decay}).')
+                setattr(layer, attr, reg)

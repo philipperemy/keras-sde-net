@@ -1,13 +1,43 @@
-# Keras SDE Net
-Keras implementation of SDE-Net (ICML 2020)
+# SDE Net (Keras)
+This repo contains the code for the paper:
 
 Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network with Uncertainty Estimates, ICML2020.
 
 [[paper](https://arxiv.org/abs/2008.10546)] [[video](https://www.youtube.com/watch?v=RylZA4Ioc3M)]
 
-![SDE-Net](https://github.com/Lingkai-Kong/SDE-Net/blob/master/figure/illustration.png)
+![SDE-Net](figure/illustration.png)
 
+## Package installation
 
-<center>
-<p>Implementation is in progress! Expected date of completion: Mid September.</p>
-</center>
+```bash
+virtualenv -p python3 venv && source venv/bin/activate # optional but recommended.
+pip install -e . # install the package.
+```
+
+## Training & Evaluation
+
+#### MNIST
+
+Training vanilla ResNet:
+
+```bash
+python sdenet/train/resnet_mnist.py 
+```
+
+Evaluation:
+
+```bash
+python sdenet/eval/test_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset mnist --out_dataset svhn
+```
+
+Training SDE-Net:
+
+```bash
+python sdenet/train/sdenet_mnist.py 
+```
+
+Evaluation:
+
+```
+python sdenet/eval/test_detection.py --pre_trained_net save_sdenet_mnist/final_model --network sdenet --dataset mnist --out_dataset svhn
+```
