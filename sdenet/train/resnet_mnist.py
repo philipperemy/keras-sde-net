@@ -3,9 +3,9 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
+from sdenet.data import data_loader
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from sdenet.data import data_loader
 from sdenet.models.helpers import save_weights
 from sdenet.models.resnet import ResidualNet
 

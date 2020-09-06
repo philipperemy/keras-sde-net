@@ -7,8 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow.keras.backend as K
-
 from sdenet.data import data_loader
+
 from sdenet.eval import calculate_log
 from sdenet.models import sdenet_mnist, resnet
 from sdenet.models.helpers import load_weights

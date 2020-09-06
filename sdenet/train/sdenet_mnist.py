@@ -11,10 +11,10 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
+from sdenet.data import data_loader
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.utils import to_categorical
 
-from sdenet.data import data_loader
 from sdenet.models.helpers import save_weights, set_seed, add_l2_weight_decay
 from sdenet.models.sdenet_mnist import SDENet_mnist
 
