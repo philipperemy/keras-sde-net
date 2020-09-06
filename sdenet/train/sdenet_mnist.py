@@ -89,7 +89,6 @@ def main():
             with tf.GradientTape() as tape:
                 g_variables = net.diffusion.trainable_variables
                 label = ones * real_label  # real = 0.
-                # assert np.mean(label.numpy()) == real_label
                 loss_in = criterion2(label, net(inp, training_diffusion=True))
                 train_loss_in(loss_in)
                 gradients_in = tape.gradient(loss_in, g_variables)
@@ -97,7 +96,6 @@ def main():
 
             with tf.GradientTape() as tape:
                 label = label * 0 + fake_label  # fake = 1.
-                # assert np.mean(label.numpy()) == fake_label
                 inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inp
                 loss_out = criterion2(label, net(inputs_out, training_diffusion=True))
                 train_loss_out(loss_out)
