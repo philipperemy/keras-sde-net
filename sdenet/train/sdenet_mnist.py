@@ -11,8 +11,7 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow.keras.losses import MeanSquaredError
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.losses import SparseCategoricalCrossentropy, BinaryCrossentropy
 
 from sdenet.data import data_loader
 from sdenet.models.helpers import save_weights, set_seed, add_l2_weight_decay
@@ -51,7 +50,7 @@ def main():
     fake_label = 1
 
     criterion = SparseCategoricalCrossentropy(from_logits=True)
-    criterion2 = MeanSquaredError()
+    criterion2 = BinaryCrossentropy()  # from_logits=False.
 
     optimizer_f = tf.keras.optimizers.SGD(learning_rate=args.lr, momentum=0.9)
     optimizer_g = tf.keras.optimizers.SGD(learning_rate=args.lr, momentum=0.9)
@@ -70,6 +69,7 @@ def main():
 
         ones = K.ones(shape=(args.batch_size, 1))
 
+        # tf.function -> faster execution but cant debug.
         @tf.function
         def train_step(inp, tar):
             # optimizer F
@@ -90,7 +90,7 @@ def main():
                 g_variables = net.diffusion.trainable_variables
                 label = ones * real_label  # real = 0.
                 # assert np.mean(label.numpy()) == real_label
-                loss_in = criterion2(net(inp, training_diffusion=True), label)
+                loss_in = criterion2(label, net(inp, training_diffusion=True))
                 train_loss_in(loss_in)
                 gradients_in = tape.gradient(loss_in, g_variables)
                 optimizer_g.apply_gradients(zip(gradients_in, g_variables))
@@ -99,7 +99,7 @@ def main():
                 label = label * 0 + fake_label  # fake = 1.
                 # assert np.mean(label.numpy()) == fake_label
                 inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inp
-                loss_out = criterion2(net(inputs_out, training_diffusion=True), label)
+                loss_out = criterion2(label, net(inputs_out, training_diffusion=True))
                 train_loss_out(loss_out)
                 gradients_out = tape.gradient(loss_out, g_variables)
                 optimizer_g.apply_gradients(zip(gradients_out, g_variables))
@@ -118,15 +118,21 @@ def main():
                       train_accuracy.result()))
 
     def test(ep):
+
+        @tf.function
+        def test_step(inp, tar):
+            outputs = 0
+            for j in range(args.eva_iter):
+                current_batch = net(inp)
+                outputs = outputs + K.softmax(current_batch, axis=1)
+            outputs = outputs / args.eva_iter
+            test_accuracy(tar, outputs)
+
         for batch_idx, (inputs, targets) in enumerate(test_loader_inDomain):
             inputs, targets = np.array(inputs), np.array(targets)
             inputs = np.transpose(inputs, (0, 2, 3, 1))
-            outputs = 0
-            for j in range(args.eva_iter):
-                current_batch = net(inputs)
-                outputs = outputs + K.softmax(current_batch, axis=1)
-            outputs = outputs / args.eva_iter
-            test_accuracy(targets, outputs)
+            test_step(inputs, targets)
+
         print('Test epoch: {} | Acc: {:.6f}'.format(ep, test_accuracy.result()))
 
     best_test_accuracy = 0.0
