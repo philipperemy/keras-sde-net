@@ -11,7 +11,7 @@ Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network 
 
 ```bash
 virtualenv -p python3 venv && source venv/bin/activate # optional but recommended.
-pip install -e . # install the package.
+pip install -r requirements.txt && pip install -e . # install the package.
 ```
 
 ## Training & Evaluation
