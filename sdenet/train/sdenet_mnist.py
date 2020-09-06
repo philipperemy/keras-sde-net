@@ -11,10 +11,10 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from sdenet.data import data_loader
 from tensorflow.keras.losses import MeanSquaredError
-from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
+from sdenet.data import data_loader
 from sdenet.models.helpers import save_weights, set_seed, add_l2_weight_decay
 from sdenet.models.sdenet_mnist import SDENet_mnist
 
@@ -50,7 +50,7 @@ def main():
     real_label = 0
     fake_label = 1
 
-    criterion = MeanSquaredError()
+    criterion = SparseCategoricalCrossentropy(from_logits=True)
     criterion2 = MeanSquaredError()
 
     optimizer_f = tf.keras.optimizers.SGD(learning_rate=args.lr, momentum=0.9)
@@ -68,21 +68,15 @@ def main():
     # Training
     def train(ep):
 
-        print('\nEpoch: %d' % ep)
-        # training with in-domain data
-        total = 0
-        for batch_idx, (inputs, targets) in enumerate(train_loader_inDomain):
-            inputs, targets = np.array(inputs), np.array(targets)
-            inputs = np.transpose(inputs, (0, 2, 3, 1))
-            total += len(inputs)
+        ones = K.ones(shape=(args.batch_size, 1))
 
+        @tf.function
+        def train_step(inp, tar):
             # optimizer F
             with tf.GradientTape() as tape:
-                outputs = net(inputs)
-                num_classes = outputs.shape[-1]
-                outputs_softmax = K.softmax(outputs)
-                loss = criterion(outputs_softmax, to_categorical(targets, num_classes))
-                train_accuracy(targets, outputs_softmax)
+                outputs = net(inp)
+                loss = criterion(tar, outputs)
+                train_accuracy(tar, outputs)
                 train_loss(loss)
 
                 f_variables = net.downsampling_layers.trainable_variables
@@ -94,24 +88,30 @@ def main():
             # optimizer G
             with tf.GradientTape() as tape:
                 g_variables = net.diffusion.trainable_variables
-                label = K.ones(shape=(args.batch_size, 1)) * real_label  # real = 0.
-                assert np.mean(label.numpy()) == real_label
-                loss_in = criterion2(net(inputs, training_diffusion=True), label)
+                label = ones * real_label  # real = 0.
+                # assert np.mean(label.numpy()) == real_label
+                loss_in = criterion2(net(inp, training_diffusion=True), label)
                 train_loss_in(loss_in)
                 gradients_in = tape.gradient(loss_in, g_variables)
                 optimizer_g.apply_gradients(zip(gradients_in, g_variables))
 
             with tf.GradientTape() as tape:
                 label = label * 0 + fake_label  # fake = 1.
-                assert np.mean(label.numpy()) == fake_label
-                inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inputs
+                # assert np.mean(label.numpy()) == fake_label
+                inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inp
                 loss_out = criterion2(net(inputs_out, training_diffusion=True), label)
                 train_loss_out(loss_out)
                 gradients_out = tape.gradient(loss_out, g_variables)
                 optimizer_g.apply_gradients(zip(gradients_out, g_variables))
 
-            # gradients_sum = [g1 + g2 for g1, g2 in zip(gradients_in, gradients_out)]
-            # assert len(gradients_sum) == len(g_variables)
+        print('\nEpoch: %d' % ep)
+        # training with in-domain data
+        total = 0
+        for batch_idx, (inputs, targets) in enumerate(train_loader_inDomain):
+            inputs, targets = np.array(inputs), np.array(targets)
+            inputs = np.transpose(inputs, (0, 2, 3, 1))
+            total += len(inputs)
+            train_step(inputs, targets)
 
         print('Train epoch:{} \tLoss: {:.6f} | Loss_in: {:.8f}, Loss_out: {:.8f} | Acc: {:.4f}'
               .format(ep, train_loss.result(), train_loss_in.result(), train_loss_out.result(),
@@ -162,3 +162,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
