@@ -3,7 +3,7 @@
 """
 Created on Mon Mar 11 16:34:10 2019
 
-@author: lingkaikong
+@author: philipperemy
 """
 import argparse
 from pathlib import Path
@@ -118,8 +118,6 @@ def main():
                       train_accuracy.result()))
 
     def test(ep):
-        correct = 0
-        total = 0
         for batch_idx, (inputs, targets) in enumerate(test_loader_inDomain):
             inputs, targets = np.array(inputs), np.array(targets)
             inputs = np.transpose(inputs, (0, 2, 3, 1))
@@ -164,4 +162,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
