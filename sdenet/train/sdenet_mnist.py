@@ -59,10 +59,10 @@ def main():
     train_loss = tf.keras.metrics.Mean(name='train_loss')
     train_loss_in = tf.keras.metrics.Mean(name='train_loss_in')
     train_loss_out = tf.keras.metrics.Mean(name='train_loss_out')
-    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_loss_out')
+    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
     # use a smaller sigma during training for training stability
-    # TODO: for now let's only focus on the non diffusion part.
     net.sigma = 20
 
     # Training
@@ -127,19 +127,17 @@ def main():
             for j in range(args.eva_iter):
                 current_batch = net(inputs)
                 outputs = outputs + K.softmax(current_batch, axis=1)
-
             outputs = outputs / args.eva_iter
-            predicted = K.argmax(outputs)
-            total += len(targets)
-            correct += np.array(predicted == targets).sum()
+            test_accuracy(targets, outputs)
+        print('Test epoch: {} | Acc: {:.6f}'.format(ep, test_accuracy.result()))
 
-        print('Test epoch: {} | Acc: {:.6f}'.format(ep, 100. * correct / total))
-
+    best_test_accuracy = 0.0
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
         train_accuracy.reset_states()
         train_loss_in.reset_states()
         train_loss_out.reset_states()
+        test_accuracy.reset_states()
 
         train(epoch)
         test(epoch)
@@ -156,10 +154,14 @@ def main():
             print(f'Current LR_G: {current_lr:.6f}, New LR_G: {new_lr:.6f}.')
             optimizer_g.lr.assign(current_lr * new_lr)
 
-        output_dir = Path('save_sdenet_mnist')
-        output_dir.mkdir(parents=True, exist_ok=True)
-        save_weights(net, str(output_dir / 'final_model.h5'))
+        if float(test_accuracy.result()) > best_test_accuracy:
+            best_test_accuracy = float(test_accuracy.result())
+            print('Best test accuracy reached. Saving model.')
+            output_dir = Path('save_sdenet_mnist')
+            output_dir.mkdir(parents=True, exist_ok=True)
+            save_weights(net, str(output_dir / 'final_model.h5'))
 
 
 if __name__ == '__main__':
     main()
+
