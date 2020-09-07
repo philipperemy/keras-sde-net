@@ -39,14 +39,14 @@ python sdenet/eval/eval_detection.py --pre_trained_net save_sdenet_mnist/final_m
 
 #### SVHN
 
-ResNet
+Training vanilla ResNet on SVHN and evaluating it on SVHN/CIFAR10: 
 
 ```bash
 python sdenet/train/resnet_train.py --task svhn
 python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset svhn --out_dataset cifar10
 ```
 
-SDE Net
+Training *SDE Net* on SVHN and evaluating it on SVHN/CIFAR10:
 
 ```bash
 python sdenet/train/sdenet_train.py --task svhn
