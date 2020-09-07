@@ -209,7 +209,7 @@ def main():
 
         if float(test_accuracy.result()) > best_test_accuracy:
             best_test_accuracy = float(test_accuracy.result())
-            print('Best te  st accuracy reached. Saving model.')
+            print('Best test accuracy reached. Saving model.')
             net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
             output_dir = Path(net_save_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
