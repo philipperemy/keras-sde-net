@@ -6,6 +6,8 @@ def getMNIST(batch_size, test_batch_size, img_size, **kwargs):
     num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building MNIST data loader with {} workers".format(num_workers))
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
 
     transform_train = transforms.Compose([
         transforms.ToTensor(),
@@ -83,6 +85,8 @@ def getCIFAR10(batch_size, test_batch_size, img_size, **kwargs):
     kwargs.pop('input_size', None)
     print("Building CIFAR-10 data loader with {} workers".format(num_workers))
     ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
     train_loader = DataLoader(
         datasets.CIFAR10(
             root='../data/cifar10', train=True, download=True,
@@ -112,6 +116,8 @@ def getCIFAR100(batch_size, test_batch_size, img_size, **kwargs):
     kwargs.pop('input_size', None)
     print("Building CIFAR-100 data loader with {} workers".format(num_workers))
     ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
     train_loader = DataLoader(
         datasets.CIFAR100(
             root='../data/cifar100', train=True, download=True,
@@ -141,6 +147,8 @@ def getSEMEION(batch_size, test_batch_size, img_size, **kwargs):
     kwargs.pop('input_size', None)
     print("Building SEMEION data loader with {} workers".format(num_workers))
     ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
     train_loader = DataLoader(
         datasets.SEMEION(
             root='data/semeion', download=True,
