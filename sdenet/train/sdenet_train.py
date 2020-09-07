@@ -16,7 +16,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy, BinaryCrossen
 
 from sdenet.data import data_loader
 from sdenet.models.helpers import save_weights, set_seed, add_l2_weight_decay
-from sdenet.models.sdenet_mnist import SDENet_mnist
+from sdenet.models.sdenet import SDENet
 
 
 class MNISTProfile:
@@ -93,7 +93,7 @@ def main():
 
     # Model
     print('==> Building model..')
-    net = SDENet_mnist(layer_depth=6, num_classes=10, dim=64)
+    net = SDENet(layer_depth=6, num_classes=10, dim=64)
     add_l2_weight_decay(net, weights_decay=5e-4)
 
     real_label = 0

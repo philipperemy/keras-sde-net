@@ -21,7 +21,7 @@ pip install -r requirements.txt && pip install -e . # install the package.
 Training vanilla ResNet:
 
 ```bash
-python sdenet/train/resnet_mnist.py 
+python sdenet/train/resnet_train.py 
 ```
 
 Evaluation:
@@ -33,7 +33,7 @@ python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_m
 Training SDE-Net:
 
 ```bash
-python sdenet/train/sdenet_mnist.py 
+python sdenet/train/sdenet_train.py 
 ```
 
 Evaluation:

@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from sdenet.models import resnet
 from sdenet.models.helpers import set_seed, save_weights, load_weights
-from sdenet.models.sdenet_mnist import Drift, Diffusion, SDENet_mnist, ConcatConv2d
+from sdenet.models.sdenet import Drift, Diffusion, SDENet, ConcatConv2d
 
 # to remove the warnings, we convert everything to float64. TFLOPS perf :(
 tf.keras.backend.set_floatx('float64')
@@ -110,7 +110,7 @@ class TestModels(unittest.TestCase):
     def test_sde_net_mnist(self):
         dim = 64
         inputs = np.ones(shape=(16, 28, 28, dim))
-        d = SDENet_mnist(layer_depth=6, num_classes=10, dim=dim)
+        d = SDENet(layer_depth=6, num_classes=10, dim=dim)
 
         def reproducible_call():
             set_seed()

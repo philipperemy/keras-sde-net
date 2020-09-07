@@ -10,7 +10,7 @@ import tensorflow.keras.backend as K
 from sdenet.data import data_loader
 
 from sdenet.eval import calculate_log
-from sdenet.models import sdenet_mnist, resnet
+from sdenet.models import sdenet, resnet
 from sdenet.models.helpers import load_weights
 
 
@@ -38,7 +38,7 @@ def main():
         model = resnet.ResidualNet()
         args.eva_iter = 1
     elif args.network == 'sdenet':
-        model = sdenet_mnist.SDENet_mnist(layer_depth=6, num_classes=10, dim=64)
+        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64)
     else:
         raise Exception('Model not found.')
     # elif args.network == 'mc_dropout':

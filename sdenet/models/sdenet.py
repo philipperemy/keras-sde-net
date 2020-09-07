@@ -65,13 +65,18 @@ class Drift(Model):
 
 # https://stackoverflow.com/questions/52622518/how-to-convert-pytorch-adaptive-avg-pool2d-method-to-keras-or-tensorflow
 class Diffusion(Model):
-    def __init__(self, dim_in, dim_out):
+    def __init__(self, dim_in, dim_out, task='mnist'):
         super().__init__()
+        self.task = task
         self.norm1 = norm(dim_in)
         self.relu = ReLU()
         self.conv1 = ConcatConv2d(dim_out, 3, 1, 1)
         self.norm2 = norm(dim_in)
         self.conv2 = ConcatConv2d(dim_out, 3, 1, 1)
+        if self.task == 'svhn':  # SVHN -> Add layer #3
+            self.norm3 = norm(dim_in)
+            self.conv3 = ConcatConv2d(dim_out, 3, 1, 1)
+
         self.fc = Sequential([
             norm(dim_out), ReLU(), GlobalAvgPool2D(), Flatten(), fc(1, activation='sigmoid')
         ])
@@ -83,15 +88,20 @@ class Diffusion(Model):
         out = self.norm2(out)
         out = self.relu(out)
         out = self.conv2(t, out)
+        if self.task == 'svhn':  # SVHN -> Add layer #3
+            out = self.norm3(out)
+            out = self.relu(out)
+            out = self.conv3(t, out)
         out = self.fc(out)
         return out
 
 
 # https://stackoverflow.com/questions/55694721/how-to-specify-padding-with-keras-in-conv2d-layer
 # https://github.com/eweill/keras-deepcv/blob/master/models/classification/alexnet.py
-class SDENet_mnist(Model):
-    def __init__(self, layer_depth, num_classes=10, dim=64):
+class SDENet(Model):
+    def __init__(self, layer_depth, num_classes=10, dim=64, task='mnist'):
         super().__init__()
+        self.task = task
         self.layer_depth = layer_depth
         self.downsampling_layers = Sequential([
             Conv2D(filters=dim, kernel_size=3, strides=(1, 1), padding='valid'),
@@ -105,7 +115,7 @@ class SDENet_mnist(Model):
             Conv2D(filters=dim, kernel_size=4, strides=(2, 2), padding='valid')
         ])
         self.drift = Drift(dim)
-        self.diffusion = Diffusion(dim, dim)
+        self.diffusion = Diffusion(dim, dim, task)
         self.fc_layers = Sequential([
             norm(dim),
             ReLU(),

@@ -1,13 +1,41 @@
 import argparse
+import shutil
 from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-from sdenet.data import data_loader
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from sdenet.models.helpers import save_weights
+from sdenet.data import data_loader
+from sdenet.models.helpers import save_weights, set_seed
 from sdenet.models.resnet import ResidualNet
+
+
+class MNISTProfile:
+    epochs = 40
+    dataset_inDomain = 'mnist'
+    imageSize = 28
+    decreasing_lr = [10, 20, 30]
+    net_save_dir = 'save_resnet_mnist'
+
+
+class SVHNProfile:
+    epochs = 60
+    dataset_inDomain = 'svhn'
+    imageSize = 32
+    decreasing_lr = [20, 40]
+    net_save_dir = 'save_resnet_svhn'
+
+
+def apply_profile_to_args(args, profile):
+    if args.epochs is None:
+        args.epochs = profile.epochs
+    if args.dataset_inDomain is None:
+        args.dataset_inDomain = profile.dataset_inDomain
+    if args.imageSize is None:
+        args.imageSize = profile.imageSize
+    if args.decreasing_lr is None:
+        args.decreasing_lr = profile.decreasing_lr
 
 
 def main():
@@ -23,6 +51,19 @@ def main():
     parser.add_argument('--decreasing_lr', default=[10, 20, 30], nargs='+', help='decreasing strategy')
     parser.add_argument('--seed', type=float, default=0)
     args = parser.parse_args()
+
+    # Apply profile.
+    if args.task == 'mnist':
+        profile = MNISTProfile
+    elif args.task == 'svhn':
+        profile = SVHNProfile
+    else:
+        raise Exception(f'Unknown task: {args.task}.')
+    apply_profile_to_args(args, profile)
+    print(args)
+
+    if args.seed != 0:
+        set_seed(args.seed)
 
     print(f'load data: {args.dataset}')
     train_loader, test_loader = data_loader.getDataSet(args.dataset, args.batch_size,
@@ -40,6 +81,7 @@ def main():
     test_loss = tf.keras.metrics.Mean(name='test_loss')
     test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
+    @tf.function
     def train_step(images, labels):
         with tf.GradientTape() as tape:
             predictions = net(images, training=True)
@@ -49,12 +91,19 @@ def main():
         train_loss(loss)
         train_accuracy(labels, predictions)
 
+    @tf.function
     def test_step(images, labels):
         predictions = net(images, training=False)
         t_loss = criterion(labels, predictions)
         test_loss(t_loss)
         test_accuracy(labels, predictions)
 
+    net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+    output_dir = Path(net_save_dir)
+    if output_dir.exists():
+        shutil.rmtree(str(output_dir))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    best_test_accuracy = 0.0
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
         train_accuracy.reset_states()
@@ -79,8 +128,12 @@ def main():
             print(f'Current LR: {current_lr:.6f}, New LR: {new_lr:.6f}.')
             optimizer.lr.assign(current_lr * new_lr)
 
-        output_dir = Path('save_resnet_mnist')
-        output_dir.mkdir(parents=True, exist_ok=True)
+        if float(test_accuracy.result()) > best_test_accuracy:  # best.
+            best_test_accuracy = float(test_accuracy.result())
+            print('Best test accuracy reached. Saving model.')
+            save_weights(net, str(output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
+            save_weights(net, str(output_dir / f'best_model.h5'))
+        # final.
         save_weights(net, str(output_dir / 'final_model.h5'))
 
 
