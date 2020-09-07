@@ -109,7 +109,7 @@ def main():
         test_loss.reset_states()
         test_accuracy.reset_states()
 
-        template = 'Epoch {}, Loss: {:.3f}, Accuracy: {:.3f}, Test Loss: {:.3f}, Test Accuracy: {:.3f}'
+        template = 'Epoch {}, Loss: {:.5f}, Accuracy: {:.4f}, Test Loss: {:.5f}, Test Accuracy: {:.4f}'
         for batch_idx, (inputs, targets) in enumerate(train_loader):
             inputs, targets = inputs.numpy(), targets.numpy()
             inputs = np.transpose(inputs, (0, 2, 3, 1))
