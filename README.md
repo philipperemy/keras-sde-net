@@ -1,4 +1,4 @@
-# SDE Net (Keras)
+## SDE Net (Keras)
 This repo contains the code for the paper:
 
 Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network with Uncertainty Estimates, ICML2020.
@@ -7,14 +7,14 @@ Lingkai Kong, Jimeng Sun and Chao Zhang, SDE-Net: Equipping Deep Neural Network 
 
 ![SDE-Net](figure/illustration.png)
 
-## Package installation
+### Package installation
 
 ```bash
 virtualenv -p python3 venv && source venv/bin/activate # optional but recommended.
 pip install -r requirements.txt && pip install -e . # install the package.
 ```
 
-## Training & Evaluation
+### Training & Evaluation
 
 ```bash
 DATASET="mnist" # mnist | svhn | cifar10.
