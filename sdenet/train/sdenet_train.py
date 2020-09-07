@@ -93,7 +93,7 @@ def main():
 
     # Model
     print('==> Building model..')
-    net = SDENet(layer_depth=6, num_classes=10, dim=64)
+    net = SDENet(layer_depth=6, num_classes=10, dim=64, task=args.task)
     add_l2_weight_decay(net, weights_decay=5e-4)
 
     real_label = 0
