@@ -35,7 +35,13 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
     num_workers = kwargs.setdefault('num_workers', 1)
     kwargs.pop('input_size', None)
     print("Building SVHN data loader with {} workers".format(num_workers))
-    apply_grayscale = bool(kwargs.get('apply_grayscale', False))
+    apply_grayscale = kwargs.get('apply_grayscale')
+    if apply_grayscale is not None:
+        apply_grayscale = True
+        # kwargs is fed to DataLoader after.
+        del kwargs['apply_grayscale']
+    else:
+        apply_grayscale = False
 
     def target_transform(target):
         new_target = target - 1
@@ -179,7 +185,7 @@ def getDataSet(data_type, batch_size, test_batch_size, imageSize, **kwargs):
 
 
 if __name__ == '__main__':
-    train_loader, test_loader = getDataSet('cifar10', 256, 1000, 28)
+    train_loader, test_loader = getDataSet('svhn', 256, 1000, 28, apply_grayscale=True)
     for batch_idx, (inputs, targets) in enumerate(test_loader):
         print(inputs.shape)
         print(targets.shape)
