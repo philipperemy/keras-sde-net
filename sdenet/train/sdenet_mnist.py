@@ -18,28 +18,75 @@ from sdenet.models.helpers import save_weights, set_seed, add_l2_weight_decay
 from sdenet.models.sdenet_mnist import SDENet_mnist
 
 
+class MNISTProfile:
+    lr2 = 0.01
+    epochs = 40
+    dataset_inDomain = 'mnist'
+    imageSize = 28
+    decreasing_lr = [10, 20, 30]
+    decreasing_lr2 = [15, 30]
+    net_sigma = 20
+    net_save_dir = 'save_sdenet_mnist'
+
+
+class SVHNProfile:
+    lr2 = 0.005
+    epochs = 60
+    dataset_inDomain = 'svhn'
+    imageSize = 32
+    decreasing_lr = [20, 40]
+    decreasing_lr2 = [10, 30]
+    net_sigma = 5
+    net_save_dir = 'save_sdenet_svhn'
+
+
+def apply_profile_to_args(args, profile):
+    if args.lr2 is None:
+        args.lr2 = profile.lr2
+    if args.epochs is None:
+        args.epochs = profile.epochs
+    if args.dataset_inDomain is None:
+        args.dataset_inDomain = profile.dataset_inDomain
+    if args.imageSize is None:
+        args.imageSize = profile.imageSize
+    if args.decreasing_lr is None:
+        args.decreasing_lr = profile.decreasing_lr
+    if args.decreasing_lr2 is None:
+        args.decreasing_lr2 = profile.decreasing_lr2
+
+
 def main():
     parser = argparse.ArgumentParser(description='PyTorch SDE-Net Training')
+    parser.add_argument('--task', required=True, choices=['mnist', 'svhn'])
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate of drift net')
-    parser.add_argument('--lr2', default=0.01, type=float, help='learning rate of diffusion net')
+    parser.add_argument('--lr2', default=None, type=float, help='learning rate of diffusion net')
     parser.add_argument('--training_out', action='store_false', default=True, help='training_with_out')
-    parser.add_argument('--epochs', type=int, default=40, help='number of epochs to train')
+    parser.add_argument('--epochs', type=int, default=None, help='number of epochs to train')
     parser.add_argument('--eva_iter', default=5, type=int, help='number of passes when evaluation')
-    parser.add_argument('--dataset_inDomain', default='mnist', help='training dataset')
+    parser.add_argument('--dataset_inDomain', default=None, help='training dataset')
     parser.add_argument('--batch_size', type=int, default=128, help='input batch size for training')
-    parser.add_argument('--imageSize', type=int, default=28, help='the height / width of the input image to network')
+    parser.add_argument('--imageSize', type=int, default=None, help='the height / width of the input image to network')
     parser.add_argument('--test_batch_size', type=int, default=1000)
     parser.add_argument('--seed', type=float, default=0)
     parser.add_argument('--droprate', type=float, default=0.1, help='learning rate decay')
-    parser.add_argument('--decreasing_lr', default=[10, 20, 30], nargs='+', help='decreasing strategy')
-    parser.add_argument('--decreasing_lr2', default=[15, 30], nargs='+', help='decreasing strategy')
+    parser.add_argument('--decreasing_lr', default=None, nargs='+', help='decreasing strategy')
+    parser.add_argument('--decreasing_lr2', default=None, nargs='+', help='decreasing strategy')
     args = parser.parse_args()
+
+    # Apply profile.
+    if args.task == 'mnist':
+        profile = MNISTProfile
+    elif args.task == 'svhn':
+        profile = SVHNProfile
+    else:
+        raise Exception(f'Unknown task: {args.task}.')
+    apply_profile_to_args(args, profile)
 
     set_seed(args.seed)
 
     print('load in-domain data: ', args.dataset_inDomain)
-    train_loader_inDomain, test_loader_inDomain = data_loader.getDataSet(args.dataset_inDomain, args.batch_size,
-                                                                         args.test_batch_size, args.imageSize)
+    train_loader_in_domain, test_loader_in_domain = data_loader.getDataSet(args.dataset_inDomain, args.batch_size,
+                                                                           args.test_batch_size, args.imageSize)
 
     # Model
     print('==> Building model..')
@@ -86,26 +133,28 @@ def main():
                 optimizer_f.apply_gradients(zip(gradients, f_variables))
 
             # optimizer G
-            with tf.GradientTape() as tape:
-                g_variables = net.diffusion.trainable_variables
-                label = ones * real_label  # real = 0.
-                loss_in = criterion2(label, net(inp, training_diffusion=True))
-                train_loss_in(loss_in)
-                gradients_in = tape.gradient(loss_in, g_variables)
-                optimizer_g.apply_gradients(zip(gradients_in, g_variables))
+            # training with out-of-domain data
+            if args.training_out:
+                with tf.GradientTape() as tape:
+                    g_variables = net.diffusion.trainable_variables
+                    label = ones * real_label  # real = 0.
+                    loss_in = criterion2(label, net(inp, training_diffusion=True))
+                    train_loss_in(loss_in)
+                    gradients_in = tape.gradient(loss_in, g_variables)
+                    optimizer_g.apply_gradients(zip(gradients_in, g_variables))
 
-            with tf.GradientTape() as tape:
-                label = label * 0 + fake_label  # fake = 1.
-                inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inp
-                loss_out = criterion2(label, net(inputs_out, training_diffusion=True))
-                train_loss_out(loss_out)
-                gradients_out = tape.gradient(loss_out, g_variables)
-                optimizer_g.apply_gradients(zip(gradients_out, g_variables))
+                with tf.GradientTape() as tape:
+                    label = label * 0 + fake_label  # fake = 1.
+                    inputs_out = 2 * K.random_normal((args.batch_size, args.imageSize, args.imageSize, 1)) + inp
+                    loss_out = criterion2(label, net(inputs_out, training_diffusion=True))
+                    train_loss_out(loss_out)
+                    gradients_out = tape.gradient(loss_out, g_variables)
+                    optimizer_g.apply_gradients(zip(gradients_out, g_variables))
 
         print('\nEpoch: %d' % ep)
         # training with in-domain data
         total = 0
-        for batch_idx, (inputs, targets) in enumerate(train_loader_inDomain):
+        for batch_idx, (inputs, targets) in enumerate(train_loader_in_domain):
             inputs, targets = np.array(inputs), np.array(targets)
             inputs = np.transpose(inputs, (0, 2, 3, 1))
             total += len(inputs)
@@ -126,7 +175,7 @@ def main():
             outputs = outputs / args.eva_iter
             test_accuracy(tar, outputs)
 
-        for batch_idx, (inputs, targets) in enumerate(test_loader_inDomain):
+        for batch_idx, (inputs, targets) in enumerate(test_loader_in_domain):
             inputs, targets = np.array(inputs), np.array(targets)
             inputs = np.transpose(inputs, (0, 2, 3, 1))
             test_step(inputs, targets)
@@ -166,4 +215,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
