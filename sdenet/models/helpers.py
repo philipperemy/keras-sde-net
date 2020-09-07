@@ -1,4 +1,5 @@
 import pickle
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +44,7 @@ def set_seed(random_seed=123):
 
 
 def save_weights(d: Model, filename):
+    print(f'Saving weights to: {filename}.')
     Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, 'wb') as w:
         pickle.dump(d.get_weights(), w)
@@ -63,3 +65,22 @@ def add_l2_weight_decay(net: Model, weights_decay=5e-4):
             if hasattr(layer, attr) and layer.trainable:
                 print(f'Set l2 regularizer to layer {layer.name} : L2({weights_decay}).')
                 setattr(layer, attr, reg)
+
+
+class Checkpoints:
+
+    def __init__(self, net, net_save_dir):
+        self.net = net
+        self.best_test_accuracy = 0.0
+        self.output_dir = Path(net_save_dir)
+        if self.output_dir.exists():
+            shutil.rmtree(str(self.output_dir))
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def persist(self, test_accuracy):
+        if float(test_accuracy.result()) > self.best_test_accuracy:  # best.
+            best_test_accuracy = float(test_accuracy.result())
+            print('Best test accuracy reached. Saving model.')
+            save_weights(self.net, str(self.output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
+            save_weights(self.net, str(self.output_dir / f'best_model.h5'))
+        save_weights(self.net, str(self.output_dir / 'final_model.h5'))

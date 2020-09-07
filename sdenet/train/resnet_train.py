@@ -1,13 +1,11 @@
 import argparse
-import shutil
-from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from sdenet.data import data_loader
-from sdenet.models.helpers import save_weights, set_seed
+from sdenet.models.helpers import set_seed, Checkpoints
 from sdenet.models.resnet import ResidualNet
 
 
@@ -99,11 +97,7 @@ def main():
         test_accuracy(labels, predictions)
 
     net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
-    output_dir = Path(net_save_dir)
-    if output_dir.exists():
-        shutil.rmtree(str(output_dir))
-    output_dir.mkdir(parents=True, exist_ok=True)
-    best_test_accuracy = 0.0
+    checkpoints = Checkpoints(net, net_save_dir)
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
         train_accuracy.reset_states()
@@ -128,13 +122,7 @@ def main():
             print(f'Current LR: {current_lr:.6f}, New LR: {new_lr:.6f}.')
             optimizer.lr.assign(current_lr * new_lr)
 
-        if float(test_accuracy.result()) > best_test_accuracy:  # best.
-            best_test_accuracy = float(test_accuracy.result())
-            print('Best test accuracy reached. Saving model.')
-            save_weights(net, str(output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
-            save_weights(net, str(output_dir / f'best_model.h5'))
-        # final.
-        save_weights(net, str(output_dir / 'final_model.h5'))
+        checkpoints.persist(float(test_accuracy.result()))
 
 
 if __name__ == '__main__':
