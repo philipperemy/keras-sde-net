@@ -115,7 +115,6 @@ def main():
 
     # Training
     def train(ep):
-
         ones = K.ones(shape=(args.batch_size, 1))
 
         # tf.function -> faster execution but cant debug.
@@ -155,11 +154,9 @@ def main():
 
         print('\nEpoch: %d' % ep)
         # training with in-domain data
-        total = 0
         for batch_idx, (inputs, targets) in enumerate(train_loader_in_domain):
             inputs, targets = np.array(inputs), np.array(targets)
             inputs = np.transpose(inputs, (0, 2, 3, 1))
-            total += len(inputs)
             train_step(inputs, targets)
 
         print('Train epoch:{} \tLoss: {:.6f} | Loss_in: {:.8f}, Loss_out: {:.8f} | Acc: {:.4f}'
@@ -207,13 +204,15 @@ def main():
             print(f'Current LR_G: {current_lr:.6f}, New LR_G: {new_lr:.6f}.')
             optimizer_g.lr.assign(current_lr * new_lr)
 
-        if float(test_accuracy.result()) > best_test_accuracy:
+        net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+        output_dir = Path(net_save_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        if float(test_accuracy.result()) > best_test_accuracy:  # best.
             best_test_accuracy = float(test_accuracy.result())
             print('Best test accuracy reached. Saving model.')
-            net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
-            output_dir = Path(net_save_dir)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            save_weights(net, str(output_dir / 'final_model.h5'))
+            save_weights(net, str(output_dir / f'best_model_{best_test_accuracy}.h5'))
+        # final.
+        save_weights(net, str(output_dir / 'final_model.h5'))
 
 
 if __name__ == '__main__':
