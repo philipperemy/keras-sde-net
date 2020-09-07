@@ -16,28 +16,43 @@ pip install -r requirements.txt && pip install -e . # install the package.
 
 ## Training & Evaluation
 
-#### MNIST
-
-Training vanilla ResNet:
-
 ```bash
-python sdenet/train/resnet_train.py 
+DATASET="mnist" # mnist | svhn | cifar10.
+OUT_DATASET="svhn" # mnist | svhn | cifar10.
 ```
 
-Evaluation:
+#### MNIST
+
+Training vanilla ResNet on MNIST and evaluating it on MNIST/SVHN: 
 
 ```bash
+python sdenet/train/resnet_train.py --task mnist
 python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset mnist --out_dataset svhn
 ```
 
-Training SDE-Net:
+Training *SDE Net* on MNIST and evaluating it on MNIST/SVHN:
 
 ```bash
-python sdenet/train/sdenet_train.py 
-```
-
-Evaluation:
-
-```bash
+python sdenet/train/sdenet_train.py --task mnist
 python sdenet/eval/eval_detection.py --pre_trained_net save_sdenet_mnist/final_model.h5 --network sdenet --dataset mnist --out_dataset svhn
 ```
+
+#### SVHN
+
+ResNet
+
+```bash
+python sdenet/train/resnet_train.py --task svhn
+python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset svhn --out_dataset cifar10
+```
+
+SDE Net
+
+```bash
+python sdenet/train/sdenet_train.py --task svhn
+python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network sdenet --dataset svhn --out_dataset cifar10
+```
+
+#### YearMSD
+
+Work in progress...
