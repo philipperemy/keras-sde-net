@@ -36,12 +36,11 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
     kwargs.pop('input_size', None)
     print("Building SVHN data loader with {} workers".format(num_workers))
     apply_grayscale = kwargs.get('apply_grayscale')
-    if apply_grayscale is not None:
-        apply_grayscale = True
-        # kwargs is fed to DataLoader after.
-        del kwargs['apply_grayscale']
-    else:
+    if apply_grayscale is None:
         apply_grayscale = False
+    else:
+        apply_grayscale = bool(apply_grayscale)
+        del kwargs['apply_grayscale']
 
     def target_transform(target):
         new_target = target - 1
