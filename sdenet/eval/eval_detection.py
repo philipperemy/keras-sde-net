@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--test_batch_size', type=int, default=1000)
 
     args = parser.parse_args()
+    args.task = args.dataset
     print(args)
 
     outf = Path('test') / args.network
