@@ -81,6 +81,7 @@ def main():
     else:
         raise Exception(f'Unknown task: {args.task}.')
     apply_profile_to_args(args, profile)
+    print(args)
 
     set_seed(args.seed)
 
