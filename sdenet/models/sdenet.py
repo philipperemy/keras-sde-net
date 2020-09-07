@@ -74,7 +74,6 @@ class Diffusion(Model):
         self.norm2 = norm(dim_in)
         self.conv2 = ConcatConv2d(dim_out, 3, 1, 1)
         if self.task == 'svhn':  # SVHN -> Add layer #3
-            print('Defining an extra conv layer for SVHN task.')
             self.norm3 = norm(dim_in)
             self.conv3 = ConcatConv2d(dim_out, 3, 1, 1)
 
@@ -90,7 +89,6 @@ class Diffusion(Model):
         out = self.relu(out)
         out = self.conv2(t, out)
         if self.task == 'svhn':  # SVHN -> Add layer #3
-            print('Applying the extra conv layer for SVHN task.')
             out = self.norm3(out)
             out = self.relu(out)
             out = self.conv3(t, out)
