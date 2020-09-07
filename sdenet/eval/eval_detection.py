@@ -45,6 +45,7 @@ def main():
     #     model = models.Resnet_dropout()
 
     if args.pre_trained_net is not None and Path(args.pre_trained_net).exists():
+        # TODO: probably add input_shape in the checkpoint :)
         model(np.ones(shape=(12, 28, 28, 1)))  # forward pass to compute input shapes.
         load_weights(model, args.pre_trained_net)
 
