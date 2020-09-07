@@ -79,8 +79,8 @@ class Checkpoints:
 
     def persist(self, test_accuracy: float):
         if test_accuracy > self.best_test_accuracy:  # best.
-            best_test_accuracy = test_accuracy
+            self.best_test_accuracy = test_accuracy
             print('Best test accuracy reached. Saving model.')
-            save_weights(self.net, str(self.output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
+            save_weights(self.net, str(self.output_dir / f'best_model_{self.best_test_accuracy:.4f}.h5'))
             save_weights(self.net, str(self.output_dir / f'best_model.h5'))
         save_weights(self.net, str(self.output_dir / 'final_model.h5'))
