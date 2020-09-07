@@ -11,7 +11,7 @@ from sdenet.models.resnet import ResidualNet
 
 class MNISTProfile:
     epochs = 40
-    dataset_inDomain = 'mnist'
+    dataset = 'mnist'
     imageSize = 28
     decreasing_lr = [10, 20, 30]
     net_save_dir = 'save_resnet_mnist'
@@ -19,7 +19,7 @@ class MNISTProfile:
 
 class SVHNProfile:
     epochs = 60
-    dataset_inDomain = 'svhn'
+    dataset = 'svhn'
     imageSize = 32
     decreasing_lr = [20, 40]
     net_save_dir = 'save_resnet_svhn'
@@ -28,8 +28,8 @@ class SVHNProfile:
 def apply_profile_to_args(args, profile):
     if args.epochs is None:
         args.epochs = profile.epochs
-    if args.dataset_inDomain is None:
-        args.dataset_inDomain = profile.dataset_inDomain
+    if args.dataset is None:
+        args.dataset = profile.dataset
     if args.imageSize is None:
         args.imageSize = profile.imageSize
     if args.decreasing_lr is None:
