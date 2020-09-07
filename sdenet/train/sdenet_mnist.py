@@ -6,6 +6,7 @@ Created on Mon Mar 11 16:34:10 2019
 @author: philipperemy
 """
 import argparse
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -181,6 +182,11 @@ def main():
 
         print('Test epoch: {} | Acc: {:.6f}'.format(ep, test_accuracy.result()))
 
+    net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+    output_dir = Path(net_save_dir)
+    if output_dir.exists():
+        shutil.rmtree(str(output_dir))
+    output_dir.mkdir(parents=True, exist_ok=True)
     best_test_accuracy = 0.0
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
@@ -204,9 +210,6 @@ def main():
             print(f'Current LR_G: {current_lr:.6f}, New LR_G: {new_lr:.6f}.')
             optimizer_g.lr.assign(current_lr * new_lr)
 
-        net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
-        output_dir = Path(net_save_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
         if float(test_accuracy.result()) > best_test_accuracy:  # best.
             best_test_accuracy = float(test_accuracy.result())
             print('Best test accuracy reached. Saving model.')
