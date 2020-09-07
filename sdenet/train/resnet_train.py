@@ -39,6 +39,7 @@ def apply_profile_to_args(args, profile):
 def main():
     # Mostly from: https://www.tensorflow.org/tutorials/quickstart/advanced
     parser = argparse.ArgumentParser(description='Keras ResNet Training')
+    parser.add_argument('--task', required=True, choices=['mnist', 'svhn'])
     parser.add_argument('--epochs', type=int, default=40, help='number of epochs to train')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--dataset', default='mnist', help='cifar10 | svhn')
