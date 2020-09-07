@@ -118,15 +118,15 @@ class SDENet_mnist(Model):
 
     def __call__(self, x, training_diffusion=False):
         out = self.downsampling_layers(x)
-        assert list(out.shape[1:]) == [6, 6, 64]
+        # assert list(out.shape[1:]) == [6, 6, 64]
         if not training_diffusion:
             t = 0
             diffusion_term = self.sigma * self.diffusion(t, out)
-            assert list(diffusion_term.shape[1:]) == [1]
+            # assert list(diffusion_term.shape[1:]) == [1]
             diffusion_term = K.expand_dims(diffusion_term, 2)
             diffusion_term = K.expand_dims(diffusion_term, 3)
-            assert list(diffusion_term.shape[1:]) == [1, 1, 1]
-            assert list(self.drift(t, out).shape[1:]) == [6, 6, 64]
+            # assert list(diffusion_term.shape[1:]) == [1, 1, 1]
+            # assert list(self.drift(t, out).shape[1:]) == [6, 6, 64]
             for i in range(self.layer_depth):
                 t = 6 * (float(i)) / self.layer_depth
                 out = out + self.drift(t, out) * self.deltat + diffusion_term * math.sqrt(
