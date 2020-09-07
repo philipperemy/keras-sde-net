@@ -16,10 +16,7 @@ pip install -r requirements.txt && pip install -e . # install the package.
 
 ### Training & Evaluation
 
-```bash
-DATASET="mnist" # mnist | svhn | cifar10.
-OUT_DATASET="svhn" # mnist | svhn | cifar10.
-```
+Supported datasets are: MNIST, SVHN, CIFAR10.
 
 #### MNIST
 
