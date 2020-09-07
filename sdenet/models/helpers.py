@@ -43,17 +43,22 @@ def set_seed(random_seed=123):
     tf.random.set_seed(random_seed)
 
 
-def save_weights(d: Model, filename):
+def save_weights(d: Model, filename: str, input_shape: list):
     print(f'Saving weights to: {filename}.')
     Path(filename).parent.mkdir(parents=True, exist_ok=True)
+    weights = d.get_weights()
+    weights.append(input_shape)  # pop last = input shape (my convention).
     with open(filename, 'wb') as w:
-        pickle.dump(d.get_weights(), w)
+        pickle.dump(weights, w)
 
 
 def load_weights(d: Model, filename):
     assert Path(filename).exists()
     with open(filename, 'rb') as r:
-        d.set_weights(pickle.load(r))
+        weights = list(pickle.load(r))
+        input_shape = weights.pop()  # pop last = input shape (my convention).
+        d(np.ones(shape=input_shape))  # forward pass to compute input shapes.
+        d.set_weights(weights)
 
 
 def add_l2_weight_decay(net: Model, weights_decay=5e-4):
@@ -77,10 +82,12 @@ class Checkpoints:
             shutil.rmtree(str(self.output_dir))
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def persist(self, test_accuracy: float):
+    def persist(self, test_accuracy: float, input_shape: list):
+        # TODO: for now we persist input_shape but it's not ideal.
+        # will require refactoring.
         if test_accuracy > self.best_test_accuracy:  # best.
             self.best_test_accuracy = test_accuracy
             print('Best test accuracy reached. Saving model.')
-            save_weights(self.net, str(self.output_dir / f'best_model_{self.best_test_accuracy:.4f}.h5'))
-            save_weights(self.net, str(self.output_dir / f'best_model.h5'))
-        save_weights(self.net, str(self.output_dir / 'final_model.h5'))
+            save_weights(self.net, str(self.output_dir / f'best_model_{self.best_test_accuracy:.4f}.h5'), input_shape)
+            save_weights(self.net, str(self.output_dir / f'best_model.h5'), input_shape)
+        save_weights(self.net, str(self.output_dir / 'final_model.h5'), input_shape)

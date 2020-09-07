@@ -26,6 +26,7 @@ class MNISTProfile:
     decreasing_lr2 = [15, 30]
     net_sigma = 20
     net_save_dir = 'save_sdenet_mnist'
+    input_shape = [1, 28, 28, 1]
 
 
 class SVHNProfile:
@@ -37,6 +38,7 @@ class SVHNProfile:
     decreasing_lr2 = [10, 30]
     net_sigma = 5
     net_save_dir = 'save_sdenet_svhn'
+    input_shape = [1, 32, 32, 3]
 
 
 def apply_profile_to_args(args, profile):
@@ -206,7 +208,7 @@ def main():
             print(f'Current LR_G: {current_lr:.6f}, New LR_G: {new_lr:.6f}.')
             optimizer_g.lr.assign(current_lr * new_lr)
 
-        checkpoints.persist(float(test_accuracy.result()))
+        checkpoints.persist(float(test_accuracy.result()), profile.input_shape)
 
 
 if __name__ == '__main__':

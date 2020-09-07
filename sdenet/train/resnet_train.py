@@ -15,6 +15,7 @@ class MNISTProfile:
     imageSize = 28
     decreasing_lr = [10, 20, 30]
     net_save_dir = 'save_resnet_mnist'
+    input_shape = [1, 28, 28, 1]
 
 
 class SVHNProfile:
@@ -23,6 +24,7 @@ class SVHNProfile:
     imageSize = 32
     decreasing_lr = [20, 40]
     net_save_dir = 'save_resnet_svhn'
+    input_shape = [1, 32, 32, 3]
 
 
 def apply_profile_to_args(args, profile):
@@ -125,7 +127,7 @@ def main():
             print(f'Current LR: {current_lr:.6f}, New LR: {new_lr:.6f}.')
             optimizer.lr.assign(current_lr * new_lr)
 
-        checkpoints.persist(float(test_accuracy.result()))
+        checkpoints.persist(float(test_accuracy.result()), profile.input_shape)
         print('')
 
 

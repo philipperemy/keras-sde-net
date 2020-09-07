@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--imageSize', type=int, default=28, help='the height / width of the input image to network')
     parser.add_argument('--out_dataset', required=True, help='out-of-dist dataset: cifar10 | svhn | imagenet | lsun')
     parser.add_argument('--num_classes', type=int, default=10, help='number of classes (default: 10)')
-    parser.add_argument('--pre_trained_net', default=None, help="path to pre trained_net h5")
+    parser.add_argument('--pre_trained_net', required=True, help="path to pre trained_net h5")
     parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--test_batch_size', type=int, default=1000)
 
@@ -45,10 +45,10 @@ def main():
     # elif args.network == 'mc_dropout':
     #     model = models.Resnet_dropout()
 
-    if args.pre_trained_net is not None and Path(args.pre_trained_net).exists():
-        # TODO: probably add input_shape in the checkpoint :)
-        model(np.ones(shape=(12, 28, 28, 1)))  # forward pass to compute input shapes.
+    if Path(args.pre_trained_net).exists():
         load_weights(model, args.pre_trained_net)
+    else:
+        raise Exception('Could not find the weights file.')
 
     apply_grayscale = args.task == 'mnist'
 
