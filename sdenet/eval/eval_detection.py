@@ -48,12 +48,15 @@ def main():
         model(np.ones(shape=(12, 28, 28, 1)))  # forward pass to compute input shapes.
         load_weights(model, args.pre_trained_net)
 
+    apply_grayscale = args.task == 'mnist'
+
     print('load target data: ', args.dataset)
-    _, test_loader = data_loader.getDataSet(args.dataset, args.batch_size, args.test_batch_size, args.imageSize)
+    _, test_loader = data_loader.getDataSet(args.dataset, args.batch_size, args.test_batch_size, args.imageSize,
+                                            apply_grayscale=apply_grayscale)
 
     print('load non target data: ', args.out_dataset)
     nt_train_loader, nt_test_loader = data_loader.getDataSet(args.out_dataset, args.batch_size, args.test_batch_size,
-                                                             args.imageSize)
+                                                             args.imageSize, apply_grayscale=apply_grayscale)
 
     def generate_target():
         correct = 0
