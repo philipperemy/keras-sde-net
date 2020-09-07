@@ -136,3 +136,7 @@ class SDENet_mnist(Model):
             t = 0
             final_out = self.diffusion(t, out)
         return final_out
+
+    def set_sigma(self, sigma):
+        print(f'Set net.sigma to {sigma}.')
+        self.sigma = sigma
