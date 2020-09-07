@@ -124,6 +124,7 @@ def main():
             optimizer.lr.assign(current_lr * new_lr)
 
         checkpoints.persist(float(test_accuracy.result()))
+        print('')
 
 
 if __name__ == '__main__':
