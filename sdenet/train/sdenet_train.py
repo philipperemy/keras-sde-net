@@ -86,8 +86,10 @@ def main():
         set_seed(args.seed)
 
     print('load in-domain data: ', args.dataset_inDomain)
+    apply_grayscale = args.task == 'mnist'
     train_loader_in_domain, test_loader_in_domain = data_loader.getDataSet(args.dataset_inDomain, args.batch_size,
-                                                                           args.test_batch_size, args.imageSize)
+                                                                           args.test_batch_size, args.imageSize,
+                                                                           apply_grayscale=apply_grayscale)
 
     # Model
     print('==> Building model..')
