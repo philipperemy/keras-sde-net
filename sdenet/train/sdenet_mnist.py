@@ -83,7 +83,8 @@ def main():
     apply_profile_to_args(args, profile)
     print(args)
 
-    set_seed(args.seed)
+    if args.seed != 0:
+        set_seed(args.seed)
 
     print('load in-domain data: ', args.dataset_inDomain)
     train_loader_in_domain, test_loader_in_domain = data_loader.getDataSet(args.dataset_inDomain, args.batch_size,
@@ -110,7 +111,7 @@ def main():
     test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
     # use a smaller sigma during training for training stability
-    net.sigma = 20
+    net.sigma = profile.net_sigma
 
     # Training
     def train(ep):
@@ -209,7 +210,8 @@ def main():
         if float(test_accuracy.result()) > best_test_accuracy:
             best_test_accuracy = float(test_accuracy.result())
             print('Best test accuracy reached. Saving model.')
-            output_dir = Path('save_sdenet_mnist')
+            net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+            output_dir = Path(net_save_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
             save_weights(net, str(output_dir / 'final_model.h5'))
 
