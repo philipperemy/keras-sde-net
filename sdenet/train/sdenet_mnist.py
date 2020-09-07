@@ -213,7 +213,7 @@ def main():
         if float(test_accuracy.result()) > best_test_accuracy:  # best.
             best_test_accuracy = float(test_accuracy.result())
             print('Best test accuracy reached. Saving model.')
-            save_weights(net, str(output_dir / f'best_model_{best_test_accuracy}.h5'))
+            save_weights(net, str(output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
         # final.
         save_weights(net, str(output_dir / 'final_model.h5'))
 
