@@ -3,7 +3,7 @@ from torchvision import datasets, transforms
 
 
 def getMNIST(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building MNIST data loader with {} workers".format(num_workers))
 
@@ -32,7 +32,7 @@ def getMNIST(batch_size, test_batch_size, img_size, **kwargs):
 
 
 def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building SVHN data loader with {} workers".format(num_workers))
     apply_grayscale = kwargs.get('apply_grayscale')
@@ -70,11 +70,7 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
     test_loader = DataLoader(
         datasets.SVHN(
             root='data/svhn', split='test', download=True,
-            transform=transforms.Compose([
-                transforms.Grayscale(),
-                transforms.Resize(img_size),
-                transforms.ToTensor(),
-            ]),
+            transform=transforms.Compose(compose_operations),
             target_transform=target_transform
         ),
         batch_size=batch_size, shuffle=False, drop_last=True, **kwargs)
@@ -83,7 +79,7 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
 
 
 def getCIFAR10(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building CIFAR-10 data loader with {} workers".format(num_workers))
     ds = []
@@ -112,7 +108,7 @@ def getCIFAR10(batch_size, test_batch_size, img_size, **kwargs):
 
 
 def getCIFAR100(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building CIFAR-100 data loader with {} workers".format(num_workers))
     ds = []
@@ -141,7 +137,7 @@ def getCIFAR100(batch_size, test_batch_size, img_size, **kwargs):
 
 
 def getSEMEION(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building SEMEION data loader with {} workers".format(num_workers))
     ds = []
