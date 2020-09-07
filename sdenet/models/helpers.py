@@ -77,9 +77,9 @@ class Checkpoints:
             shutil.rmtree(str(self.output_dir))
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def persist(self, test_accuracy):
-        if float(test_accuracy.result()) > self.best_test_accuracy:  # best.
-            best_test_accuracy = float(test_accuracy.result())
+    def persist(self, test_accuracy: float):
+        if test_accuracy > self.best_test_accuracy:  # best.
+            best_test_accuracy = test_accuracy
             print('Best test accuracy reached. Saving model.')
             save_weights(self.net, str(self.output_dir / f'best_model_{best_test_accuracy:.3f}.h5'))
             save_weights(self.net, str(self.output_dir / f'best_model.h5'))
