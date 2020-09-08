@@ -39,7 +39,7 @@ def main():
         model = resnet.ResidualNet()
         args.eva_iter = 1
     elif args.network == 'sdenet':
-        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64)
+        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64, task=args.task)
     else:
         raise Exception('Model not found.')
     # elif args.network == 'mc_dropout':
