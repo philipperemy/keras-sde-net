@@ -89,5 +89,5 @@ class Checkpoints:
             self.best_test_accuracy = test_accuracy
             print('Best test accuracy reached. Saving model.')
             save_weights(self.net, str(self.output_dir / f'best_model_{self.best_test_accuracy:.4f}.h5'), input_shape)
-            save_weights(self.net, str(self.output_dir / f'best_model.h5'), input_shape)
+            save_weights(self.net, str(self.output_dir / 'best_model.h5'), input_shape)
         save_weights(self.net, str(self.output_dir / 'final_model.h5'), input_shape)
