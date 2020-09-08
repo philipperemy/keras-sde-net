@@ -29,7 +29,7 @@ def main():
         set_seed(args.seed)
 
     print(f'load data: {args.dataset}')
-    apply_grayscale = args.task == 'mnist'
+    apply_grayscale = args.dataset == 'mnist'
     train_loader, test_loader = data_loader.getDataSet(args.dataset, args.batch_size,
                                                        args.test_batch_size, args.imageSize,
                                                        apply_grayscale=apply_grayscale)
