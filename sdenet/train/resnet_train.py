@@ -9,39 +9,9 @@ from sdenet.models.helpers import set_seed, Checkpoints
 from sdenet.models.resnet import ResidualNet
 
 
-class MNISTProfile:
-    epochs = 40
-    dataset = 'mnist'
-    imageSize = 28
-    decreasing_lr = [10, 20, 30]
-    net_save_dir = 'save_resnet_mnist'
-    input_shape = [1, 28, 28, 1]
-
-
-class SVHNProfile:
-    epochs = 60
-    dataset = 'svhn'
-    imageSize = 32
-    decreasing_lr = [20, 40]
-    net_save_dir = 'save_resnet_svhn'
-    input_shape = [1, 32, 32, 3]
-
-
-def apply_profile_to_args(args, profile):
-    if args.epochs is None:
-        args.epochs = profile.epochs
-    if args.dataset is None:
-        args.dataset = profile.dataset
-    if args.imageSize is None:
-        args.imageSize = profile.imageSize
-    if args.decreasing_lr is None:
-        args.decreasing_lr = profile.decreasing_lr
-
-
 def main():
     # Mostly from: https://www.tensorflow.org/tutorials/quickstart/advanced
     parser = argparse.ArgumentParser(description='Keras ResNet Training')
-    parser.add_argument('--task', required=True, choices=['mnist', 'svhn'])
     parser.add_argument('--epochs', type=int, default=None, help='number of epochs to train')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--dataset', default=None, help='mnist | cifar10 | svhn')
@@ -51,16 +21,8 @@ def main():
     parser.add_argument('--droprate', type=float, default=0.1, help='learning rate decay')
     parser.add_argument('--decreasing_lr', default=None, nargs='+', help='decreasing strategy')
     parser.add_argument('--seed', type=float, default=0)
+    parser.add_argument('--net_save_dir', default='net', type=str, help='where to save the checkpoints')
     args = parser.parse_args()
-
-    # Apply profile.
-    if args.task == 'mnist':
-        profile = MNISTProfile
-    elif args.task == 'svhn':
-        profile = SVHNProfile
-    else:
-        raise Exception(f'Unknown task: {args.task}.')
-    apply_profile_to_args(args, profile)
     print(args)
 
     if args.seed != 0:
@@ -101,7 +63,7 @@ def main():
         test_loss(t_loss)
         test_accuracy(labels, predictions)
 
-    net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+    net_save_dir = f'{args.net_save_dir}_{args.seed}' if args.seed != 0 else args.net_save_dir
     checkpoints = Checkpoints(net, net_save_dir)
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
@@ -127,7 +89,8 @@ def main():
             print(f'Current LR: {current_lr:.6f}, New LR: {new_lr:.6f}.')
             optimizer.lr.assign(current_lr * new_lr)
 
-        checkpoints.persist(float(test_accuracy.result()), profile.input_shape)
+        channels = 3 if args.dataset != 'mnist' else 1
+        checkpoints.persist(float(test_accuracy.result()), [1, args.imageSize, args.imageSize, channels])
         print('')
 
 

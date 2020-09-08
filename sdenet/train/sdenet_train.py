@@ -17,54 +17,14 @@ from sdenet.models.helpers import set_seed, add_l2_weight_decay, Checkpoints
 from sdenet.models.sdenet import SDENet
 
 
-class MNISTProfile:
-    lr2 = 0.01
-    epochs = 40
-    dataset_inDomain = 'mnist'
-    imageSize = 28
-    decreasing_lr = [10, 20, 30]
-    decreasing_lr2 = [15, 30]
-    net_sigma = 20
-    net_save_dir = 'save_sdenet_mnist'
-    input_shape = [1, 28, 28, 1]
-
-
-class SVHNProfile:
-    lr2 = 0.005
-    epochs = 60
-    dataset_inDomain = 'svhn'
-    imageSize = 32
-    decreasing_lr = [20, 40]
-    decreasing_lr2 = [10, 30]
-    net_sigma = 5
-    net_save_dir = 'save_sdenet_svhn'
-    input_shape = [1, 32, 32, 3]
-
-
-def apply_profile_to_args(args, profile):
-    if args.lr2 is None:
-        args.lr2 = profile.lr2
-    if args.epochs is None:
-        args.epochs = profile.epochs
-    if args.dataset_inDomain is None:
-        args.dataset_inDomain = profile.dataset_inDomain
-    if args.imageSize is None:
-        args.imageSize = profile.imageSize
-    if args.decreasing_lr is None:
-        args.decreasing_lr = profile.decreasing_lr
-    if args.decreasing_lr2 is None:
-        args.decreasing_lr2 = profile.decreasing_lr2
-
-
 def main():
-    parser = argparse.ArgumentParser(description='PyTorch SDE-Net Training')
-    parser.add_argument('--task', required=True, choices=['mnist', 'svhn'])
+    parser = argparse.ArgumentParser(description='Keras SDE-Net Training')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate of drift net')
     parser.add_argument('--lr2', default=None, type=float, help='learning rate of diffusion net')
     parser.add_argument('--training_out', action='store_false', default=True, help='training_with_out')
     parser.add_argument('--epochs', type=int, default=None, help='number of epochs to train')
     parser.add_argument('--eva_iter', default=5, type=int, help='number of passes when evaluation')
-    parser.add_argument('--dataset_inDomain', default=None, help='training dataset')
+    parser.add_argument('--dataset', default=None, help='training dataset')
     parser.add_argument('--batch_size', type=int, default=128, help='input batch size for training')
     parser.add_argument('--imageSize', type=int, default=None, help='the height / width of the input image to network')
     parser.add_argument('--test_batch_size', type=int, default=1000)
@@ -72,30 +32,23 @@ def main():
     parser.add_argument('--droprate', type=float, default=0.1, help='learning rate decay')
     parser.add_argument('--decreasing_lr', default=None, nargs='+', help='decreasing strategy')
     parser.add_argument('--decreasing_lr2', default=None, nargs='+', help='decreasing strategy')
+    parser.add_argument('--net_sigma', default=20, type=int, help='sigma coefficient for the diffusion')
+    parser.add_argument('--net_save_dir', default='net', type=str, help='where to save the checkpoints')
     args = parser.parse_args()
-
-    # Apply profile.
-    if args.task == 'mnist':
-        profile = MNISTProfile
-    elif args.task == 'svhn':
-        profile = SVHNProfile
-    else:
-        raise Exception(f'Unknown task: {args.task}.')
-    apply_profile_to_args(args, profile)
     print(args)
 
     if args.seed != 0:
         set_seed(args.seed)
 
-    print('load in-domain data: ', args.dataset_inDomain)
-    apply_grayscale = args.task == 'mnist'
-    train_loader_in_domain, test_loader_in_domain = data_loader.getDataSet(args.dataset_inDomain, args.batch_size,
+    print('load in-domain data: ', args.dataset)
+    apply_grayscale = args.dataset == 'mnist'
+    train_loader_in_domain, test_loader_in_domain = data_loader.getDataSet(args.dataset, args.batch_size,
                                                                            args.test_batch_size, args.imageSize,
                                                                            apply_grayscale=apply_grayscale)
 
     # Model
     print('==> Building model..')
-    net = SDENet(layer_depth=6, num_classes=10, dim=64, task=args.task)
+    net = SDENet(layer_depth=6, num_classes=10, dim=64, task=args.dataset)
     add_l2_weight_decay(net, weights_decay=5e-4)
 
     real_label = 0
@@ -114,7 +67,7 @@ def main():
     test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
     # use a smaller sigma during training for training stability
-    net.set_sigma(sigma=profile.net_sigma)
+    net.set_sigma(sigma=args.net_sigma)
 
     # Training
     def train(ep):
@@ -184,7 +137,7 @@ def main():
 
         print('Test epoch: {} | Acc: {:.6f}'.format(ep, test_accuracy.result()))
 
-    net_save_dir = f'{profile.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+    net_save_dir = f'{args.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
     checkpoints = Checkpoints(net, net_save_dir)
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
@@ -208,7 +161,8 @@ def main():
             print(f'Current LR_G: {current_lr:.6f}, New LR_G: {new_lr:.6f}.')
             optimizer_g.lr.assign(current_lr * new_lr)
 
-        checkpoints.persist(float(test_accuracy.result()), profile.input_shape)
+        channels = 3 if args.dataset != 'mnist' else 1
+        checkpoints.persist(float(test_accuracy.result()), [1, args.imageSize, args.imageSize, channels])
 
 
 if __name__ == '__main__':

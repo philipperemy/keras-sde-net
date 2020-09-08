@@ -16,19 +16,17 @@ from sdenet.models.helpers import load_weights
 
 def main():
     parser = argparse.ArgumentParser(description='Test code - measure the detection peformance')
+    parser.add_argument('--dataset', required=True, help='in domain dataset')
     parser.add_argument('--eva_iter', default=10, type=int, help='number of passes when evaluation')
     parser.add_argument('--network', type=str, choices=['resnet', 'sdenet', 'mc_dropout'], default='resnet')
     parser.add_argument('--batch-size', type=int, default=256, help='batch size')
-    parser.add_argument('--dataset', required=True, help='in domain dataset')
     parser.add_argument('--imageSize', type=int, default=28, help='the height / width of the input image to network')
     parser.add_argument('--out_dataset', required=True, help='out-of-dist dataset: cifar10 | svhn | imagenet | lsun')
     parser.add_argument('--num_classes', type=int, default=10, help='number of classes (default: 10)')
     parser.add_argument('--pre_trained_net', required=True, help="path to pre trained_net h5")
-    parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--test_batch_size', type=int, default=1000)
-
+    parser.add_argument('--net_sigma', default=20, type=int, help='sigma coefficient for the diffusion')
     args = parser.parse_args()
-    args.task = args.dataset
     print(args)
 
     outf = Path('test') / args.network
@@ -39,7 +37,8 @@ def main():
         model = resnet.ResidualNet()
         args.eva_iter = 1
     elif args.network == 'sdenet':
-        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64, task=args.task)
+        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64, task=args.dataset)
+        model.sigma = args.net_sigma
     else:
         raise Exception('Model not found.')
     # elif args.network == 'mc_dropout':
@@ -50,8 +49,7 @@ def main():
     else:
         raise Exception('Could not find the weights file.')
 
-    apply_grayscale = args.task == 'mnist'
-
+    apply_grayscale = args.dataset == 'mnist'
     print('load target data: ', args.dataset)
     _, test_loader = data_loader.getDataSet(args.dataset, args.batch_size, args.test_batch_size, args.imageSize,
                                             apply_grayscale=apply_grayscale)
