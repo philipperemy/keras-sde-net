@@ -57,7 +57,10 @@ def load_weights(d: Model, filename):
     with open(filename, 'rb') as r:
         weights = list(pickle.load(r))
         input_shape = weights.pop()  # pop last = input shape (my convention).
-        d(np.ones(shape=input_shape))  # forward pass to compute input shapes.
+        try:
+            d(np.ones(shape=input_shape))  # forward pass to compute input shapes.
+        except TypeError:
+            d(0, np.ones(shape=input_shape))  # t, x
         d.set_weights(weights)
 
 
@@ -89,5 +92,5 @@ class Checkpoints:
             self.best_test_accuracy = test_accuracy
             print('Best test accuracy reached. Saving model.')
             save_weights(self.net, str(self.output_dir / f'best_model_{self.best_test_accuracy:.4f}.h5'), input_shape)
-            save_weights(self.net, str(self.output_dir / f'best_model.h5'), input_shape)
+            save_weights(self.net, str(self.output_dir / 'best_model.h5'), input_shape)
         save_weights(self.net, str(self.output_dir / 'final_model.h5'), input_shape)
