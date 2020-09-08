@@ -137,7 +137,7 @@ def main():
 
         print('Test epoch: {} | Acc: {:.6f}'.format(ep, test_accuracy.result()))
 
-    net_save_dir = f'{args.net_save_dir}_{args.seed}' if args.seed != 0 else profile.net_save_dir
+    net_save_dir = f'{args.net_save_dir}_{args.seed}' if args.seed != 0 else args.net_save_dir
     checkpoints = Checkpoints(net, net_save_dir)
     for epoch in range(0, args.epochs):
         train_loss.reset_states()
