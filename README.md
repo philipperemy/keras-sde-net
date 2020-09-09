@@ -23,6 +23,10 @@ Look at the bash run scripts at the root of the repository to get started for tr
 
 ### Comparison between official Pytorch implementation and Keras
 
+This comparison is just the result of one run. No runs were handpicked. Overall it's very similar.
+
+Except probably SDENET on SVHN (95% vs 94%).
+
 #### Pytorch
 
 ```
