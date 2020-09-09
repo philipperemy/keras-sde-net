@@ -16,48 +16,189 @@ pip install -r requirements.txt && pip install -e . # install the package.
 
 ### Training & Evaluation
 
-Supported datasets are: MNIST, SVHN, CIFAR10.
+Supported datasets are: MNIST, SVHN, CIFAR10, CIFAR100. Supported models are RESNET and SDENET.
 
-#### MNIST
+Look at the bash run scripts at the root of the repository to get started for training and evaluation.
 
-##### ResNet
 
-Training vanilla ResNet on MNIST and evaluating it on MNIST/SVHN: 
+### Comparison between official Pytorch implementation and Keras
 
-```bash
-python sdenet/train/resnet_train.py --task mnist
-python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset mnist --out_dataset svhn
+#### Pytorch
+
+```
+MNIST RESNET
+_________________________________
+
+Final Accuracy: 9945/10000 (99.45%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            88.783%
+AUROC:                     95.939%
+Detection acc:             92.169%
+AUPR In:                   86.441%
+AUPR Out:                  98.434%
+
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            89.791%
+AUROC:                     97.510%
+Detection acc:             93.041%
+AUPR In:                   99.985%
+AUPR Out:                  34.000%
+
+
+MNIST SDENET
+_________________________________
+
+Final Accuracy: 9927/10000 (99.27%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            99.372%
+AUROC:                     99.804%
+Detection acc:             98.692%
+AUPR In:                   99.483%
+AUPR Out:                  99.887%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            92.544%
+AUROC:                     97.525%
+Detection acc:             94.485%
+AUPR In:                   99.979%
+AUPR Out:                  41.739%
+
+
+SVHN RESNET
+_________________________________
+
+Final Accuracy: 24609/25856 (95.18%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            66.552%
+AUROC:                     94.421%
+Detection acc:             90.136%
+AUPR In:                   97.639%
+AUPR Out:                  84.998%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            64.376%
+AUROC:                     90.458%
+Detection acc:             85.371%
+AUPR In:                   99.301%
+AUPR Out:                  44.899%
+
+
+SVHN SDENET
+_________________________________
+
+Final Accuracy: 24588/25856 (95.10%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            65.215%
+AUROC:                     94.308%
+Detection acc:             89.746%
+AUPR In:                   97.694%
+AUPR Out:                  84.017%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            67.831%
+AUROC:                     91.267%
+Detection acc:             86.501%
+AUPR In:                   99.270%
+AUPR Out:                  48.871%
+
 ```
 
-##### SDENet
-
-Training *SDE Net* on MNIST and evaluating it on MNIST/SVHN:
-
-```bash
-python sdenet/train/sdenet_train.py --task mnist
-python sdenet/eval/eval_detection.py --pre_trained_net save_sdenet_mnist/final_model.h5 --network sdenet --dataset mnist --out_dataset svhn
+#### Keras
 ```
+MNIST RESNET
+_________________________________
 
-#### SVHN
+ Final Accuracy: 9944/10000 (99.44%)
 
-##### ResNet
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            93.162%
+AUROC:                     97.946%
+Detection acc:             94.250%
+AUPR In:                   94.842%
+AUPR Out:                  99.215%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            96.997%
+AUROC:                     98.863%
+Detection acc:             96.697%
+AUPR In:                   99.994%
+AUPR Out:                  26.744%
 
-Training vanilla ResNet on SVHN and evaluating it on SVHN/CIFAR10: 
+MNIST SDENET
+_________________________________
 
-```bash
-python sdenet/train/resnet_train.py --task svhn
-python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network resnet --dataset svhn --out_dataset cifar10
+Final Accuracy: 9934/10000 (99.34%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            98.425%
+AUROC:                     99.567%
+Detection acc:             97.804%
+AUPR In:                   98.613%
+AUPR Out:                  99.872%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            95.515%
+AUROC:                     98.763%
+Detection acc:             95.825%
+AUPR In:                   99.992%
+AUPR Out:                  32.524%
+
+SVHN RESNET
+_________________________________
+
+ Final Accuracy: 24487/25856 (94.71%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            56.648%
+AUROC:                     93.602%
+Detection acc:             87.504%
+AUPR In:                   97.627%
+AUPR Out:                  81.664%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            63.765%
+AUROC:                     91.843%
+Detection acc:             85.721%
+AUPR In:                   99.386%
+AUPR Out:                  46.231%
+
+SVHN SDENET
+_________________________________
+
+Final Accuracy: 24261/25856 (93.83%)
+
+generate log  from out-of-distribution data
+calculate metrics for OOD
+OOD  Performance of Baseline detector
+TNR at TPR 95%:            55.568%
+AUROC:                     93.406%
+Detection acc:             87.942%
+AUPR In:                   97.538%
+AUPR Out:                  82.881%
+calculate metrics for mis
+mis  Performance of Baseline detector
+TNR at TPR 95%:            61.798%
+AUROC:                     89.845%
+Detection acc:             85.974%
+AUPR In:                   99.183%
+AUPR Out:                  47.664%
 ```
-
-##### SDENet
-
-Training *SDE Net* on SVHN and evaluating it on SVHN/CIFAR10:
-
-```bash
-python sdenet/train/sdenet_train.py --task svhn
-python sdenet/eval/eval_detection.py --pre_trained_net save_resnet_mnist/final_model.h5 --network sdenet --dataset svhn --out_dataset cifar10
-```
-
-#### YearMSD
-
-Work in progress...
