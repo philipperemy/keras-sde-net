@@ -3,9 +3,11 @@ from torchvision import datasets, transforms
 
 
 def getMNIST(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building MNIST data loader with {} workers".format(num_workers))
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
 
     transform_train = transforms.Compose([
         transforms.ToTensor(),
@@ -32,9 +34,15 @@ def getMNIST(batch_size, test_batch_size, img_size, **kwargs):
 
 
 def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building SVHN data loader with {} workers".format(num_workers))
+    apply_grayscale = kwargs.get('apply_grayscale')
+    if apply_grayscale is None:
+        apply_grayscale = False
+    else:
+        apply_grayscale = bool(apply_grayscale)
+        del kwargs['apply_grayscale']
 
     def target_transform(target):
         new_target = target - 1
@@ -43,15 +51,19 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
         return new_target
 
     ds = []
+    compose_operations = []
+    if apply_grayscale:
+        print('Applying grayscale to SVHN - Because of comparison with MNIST.')
+        compose_operations.append(transforms.Grayscale())
+    compose_operations.extend([
+        transforms.Resize(img_size),
+        transforms.ToTensor(),
+    ])
 
     train_loader = DataLoader(
         datasets.SVHN(
             root='data/svhn', split='train', download=True,
-            transform=transforms.Compose([
-                transforms.Grayscale(),
-                transforms.Resize(img_size),
-                transforms.ToTensor(),
-            ]),
+            transform=transforms.Compose(compose_operations),
             target_transform=target_transform,
         ),
         batch_size=batch_size, shuffle=True, drop_last=True, **kwargs)
@@ -60,11 +72,7 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
     test_loader = DataLoader(
         datasets.SVHN(
             root='data/svhn', split='test', download=True,
-            transform=transforms.Compose([
-                transforms.Grayscale(),
-                transforms.Resize(img_size),
-                transforms.ToTensor(),
-            ]),
+            transform=transforms.Compose(compose_operations),
             target_transform=target_transform
         ),
         batch_size=batch_size, shuffle=False, drop_last=True, **kwargs)
@@ -72,11 +80,75 @@ def getSVHN(batch_size, test_batch_size, img_size, **kwargs):
     return ds
 
 
+def getCIFAR10(batch_size, test_batch_size, img_size, **kwargs):
+    num_workers = kwargs.setdefault('num_workers', 0)
+    kwargs.pop('input_size', None)
+    print("Building CIFAR-10 data loader with {} workers".format(num_workers))
+    ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
+    train_loader = DataLoader(
+        datasets.CIFAR10(
+            root='../data/cifar10', train=True, download=True,
+            transform=transforms.Compose([
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+            ])),
+        batch_size=batch_size, shuffle=True, drop_last=True, **kwargs)
+    ds.append(train_loader)
+    test_loader = DataLoader(
+        datasets.CIFAR10(
+            root='../data/cifar10', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+            ])),
+        batch_size=batch_size, shuffle=False, drop_last=True, **kwargs)
+    ds.append(test_loader)
+
+    return ds
+
+
+def getCIFAR100(batch_size, test_batch_size, img_size, **kwargs):
+    num_workers = kwargs.setdefault('num_workers', 0)
+    kwargs.pop('input_size', None)
+    print("Building CIFAR-100 data loader with {} workers".format(num_workers))
+    ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
+    train_loader = DataLoader(
+        datasets.CIFAR100(
+            root='../data/cifar100', train=True, download=True,
+            transform=transforms.Compose([
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+            ])),
+        batch_size=batch_size, shuffle=True, drop_last=True, **kwargs)
+    ds.append(train_loader)
+    test_loader = DataLoader(
+        datasets.CIFAR100(
+            root='../data/cifar100', train=False, download=True,
+            transform=transforms.Compose([
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+            ])),
+        batch_size=batch_size, shuffle=False, drop_last=True, **kwargs)
+    ds.append(test_loader)
+
+    return ds
+
+
 def getSEMEION(batch_size, test_batch_size, img_size, **kwargs):
-    num_workers = kwargs.setdefault('num_workers', 1)
+    num_workers = kwargs.setdefault('num_workers', 0)
     kwargs.pop('input_size', None)
     print("Building SEMEION data loader with {} workers".format(num_workers))
     ds = []
+    if 'apply_grayscale' in kwargs:
+        del kwargs['apply_grayscale']
     train_loader = DataLoader(
         datasets.SEMEION(
             root='data/semeion', download=True,
@@ -99,20 +171,24 @@ def getSEMEION(batch_size, test_batch_size, img_size, **kwargs):
     return ds
 
 
-def getDataSet(data_type, batch_size, test_batch_size, imageSize):
+def getDataSet(data_type, batch_size, test_batch_size, imageSize, **kwargs):
     if data_type == 'svhn':
-        train_loader, test_loader = getSVHN(batch_size, test_batch_size, imageSize)
+        train_loader, test_loader = getSVHN(batch_size, test_batch_size, imageSize, **kwargs)
     elif data_type == 'mnist':
-        train_loader, test_loader = getMNIST(batch_size, test_batch_size, imageSize)
+        train_loader, test_loader = getMNIST(batch_size, test_batch_size, imageSize, **kwargs)
     elif data_type == 'semeion':
-        train_loader, test_loader = getSEMEION(batch_size, test_batch_size, imageSize)
+        train_loader, test_loader = getSEMEION(batch_size, test_batch_size, imageSize, **kwargs)
+    elif data_type == 'cifar10':
+        train_loader, test_loader = getCIFAR10(batch_size, test_batch_size, imageSize, **kwargs)
+    elif data_type == 'cifar100':
+        train_loader, test_loader = getCIFAR100(batch_size, test_batch_size, imageSize, **kwargs)
     else:
         raise Exception('unknown datatype.')
     return train_loader, test_loader
 
 
 if __name__ == '__main__':
-    train_loader, test_loader = getDataSet('cifar10', 256, 1000, 28)
+    train_loader, test_loader = getDataSet('svhn', 256, 1000, 28, apply_grayscale=True)
     for batch_idx, (inputs, targets) in enumerate(test_loader):
         print(inputs.shape)
         print(targets.shape)

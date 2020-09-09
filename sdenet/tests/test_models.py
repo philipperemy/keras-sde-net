@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from sdenet.models import resnet
 from sdenet.models.helpers import set_seed, save_weights, load_weights
-from sdenet.models.sdenet_mnist import Drift, Diffusion, SDENet_mnist, ConcatConv2d
+from sdenet.models.sdenet import Drift, Diffusion, SDENet, ConcatConv2d
 
 # to remove the warnings, we convert everything to float64. TFLOPS perf :(
 tf.keras.backend.set_floatx('float64')
@@ -54,7 +54,7 @@ class TestModels(unittest.TestCase):
         v3 = d(1, np.zeros(shape=(8, 6, 6, dim)))
         self.assertTrue(np.any(np.array(v1) != np.array(v3)))
 
-        save_weights(d, 'hello.h5')
+        save_weights(d, 'hello.h5', input_shape=[1, 6, 6, dim])
         load_weights(d, 'hello.h5')
 
     def test_model_drift(self):
@@ -80,7 +80,7 @@ class TestModels(unittest.TestCase):
         v3 = d(1, np.zeros(shape=(8, 6, 6, dim)))
         self.assertTrue(np.any(np.array(v1) != np.array(v3)))
 
-        save_weights(d, 'hello.h5')
+        save_weights(d, 'hello.h5', input_shape=[16, 12, 12, dim])
         load_weights(d, 'hello.h5')
 
     def test_model_diffusion(self):
@@ -104,13 +104,13 @@ class TestModels(unittest.TestCase):
         v3 = d(1, np.zeros(shape=(8, 6, 6, dim)))
         self.assertTrue(np.any(np.array(v1) != np.array(v3)))
 
-        save_weights(d, 'hello.h5')
+        save_weights(d, 'hello.h5', input_shape=[8, 6, 6, dim])
         load_weights(d, 'hello.h5')
 
     def test_sde_net_mnist(self):
         dim = 64
         inputs = np.ones(shape=(16, 28, 28, dim))
-        d = SDENet_mnist(layer_depth=6, num_classes=10, dim=dim)
+        d = SDENet(layer_depth=6, num_classes=10, dim=dim)
 
         def reproducible_call():
             set_seed()
@@ -134,7 +134,7 @@ class TestModels(unittest.TestCase):
         v3 = reproducible_call()
         self.assertTrue(np.any(np.array(v1) != np.array(v3)))
 
-        save_weights(d, 'hello.h5')
+        save_weights(d, 'hello.h5', input_shape=[16, 28, 28, dim])
         load_weights(d, 'hello.h5')
 
     def test_res_net_mnist(self):
@@ -163,5 +163,5 @@ class TestModels(unittest.TestCase):
         v3 = reproducible_call()
         self.assertTrue(np.any(np.array(v1) != np.array(v3)))
 
-        save_weights(d, 'hello.h5')
+        save_weights(d, 'hello.h5', input_shape=[16, 28, 28, 1])
         load_weights(d, 'hello.h5')

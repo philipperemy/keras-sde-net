@@ -7,26 +7,25 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow.keras.backend as K
-from sdenet.data import data_loader
 
+from sdenet.data import data_loader
 from sdenet.eval import calculate_log
-from sdenet.models import sdenet_mnist, resnet
+from sdenet.models import sdenet, resnet
 from sdenet.models.helpers import load_weights
 
 
 def main():
     parser = argparse.ArgumentParser(description='Test code - measure the detection peformance')
+    parser.add_argument('--dataset', required=True, help='in domain dataset')
     parser.add_argument('--eva_iter', default=10, type=int, help='number of passes when evaluation')
     parser.add_argument('--network', type=str, choices=['resnet', 'sdenet', 'mc_dropout'], default='resnet')
     parser.add_argument('--batch-size', type=int, default=256, help='batch size')
-    parser.add_argument('--dataset', required=True, help='in domain dataset')
     parser.add_argument('--imageSize', type=int, default=28, help='the height / width of the input image to network')
     parser.add_argument('--out_dataset', required=True, help='out-of-dist dataset: cifar10 | svhn | imagenet | lsun')
     parser.add_argument('--num_classes', type=int, default=10, help='number of classes (default: 10)')
-    parser.add_argument('--pre_trained_net', default=None, help="path to pre trained_net h5")
-    parser.add_argument('--gpu', type=int, default=0)
+    parser.add_argument('--pre_trained_net', required=True, help="path to pre trained_net h5")
     parser.add_argument('--test_batch_size', type=int, default=1000)
-
+    parser.add_argument('--net_sigma', default=20, type=int, help='sigma coefficient for the diffusion')
     args = parser.parse_args()
     print(args)
 
@@ -38,22 +37,26 @@ def main():
         model = resnet.ResidualNet()
         args.eva_iter = 1
     elif args.network == 'sdenet':
-        model = sdenet_mnist.SDENet_mnist(layer_depth=6, num_classes=10, dim=64)
+        model = sdenet.SDENet(layer_depth=6, num_classes=10, dim=64, task=args.dataset)
+        model.set_sigma(args.net_sigma)
     else:
         raise Exception('Model not found.')
     # elif args.network == 'mc_dropout':
     #     model = models.Resnet_dropout()
 
-    if args.pre_trained_net is not None and Path(args.pre_trained_net).exists():
-        model(np.ones(shape=(12, 28, 28, 1)))  # forward pass to compute input shapes.
+    if Path(args.pre_trained_net).exists():
         load_weights(model, args.pre_trained_net)
+    else:
+        raise Exception('Could not find the weights file.')
 
+    apply_grayscale = args.dataset == 'mnist'
     print('load target data: ', args.dataset)
-    _, test_loader = data_loader.getDataSet(args.dataset, args.batch_size, args.test_batch_size, args.imageSize)
+    _, test_loader = data_loader.getDataSet(args.dataset, args.batch_size, args.test_batch_size, args.imageSize,
+                                            apply_grayscale=apply_grayscale)
 
     print('load non target data: ', args.out_dataset)
     nt_train_loader, nt_test_loader = data_loader.getDataSet(args.out_dataset, args.batch_size, args.test_batch_size,
-                                                             args.imageSize)
+                                                             args.imageSize, apply_grayscale=apply_grayscale)
 
     def generate_target():
         correct = 0
