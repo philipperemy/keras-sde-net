@@ -23,6 +23,13 @@ virtualenv -p python3 venv && source venv/bin/activate # optional but recommende
 pip install -r requirements.txt && pip install -e . # install the package.
 ```
 
+### Import the models
+
+```python
+from sdenet import SDENet
+from sdenet import ResidualNet
+```
+
 ### Training & Evaluation
 
 Supported datasets are: MNIST, SVHN, CIFAR10, CIFAR100. Supported models are RESNET and SDENET.
