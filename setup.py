@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 from sdenet import VERSION
 
 setup(
-    name='SDE Net - Keras',
+    name='sdenet',
     version=VERSION,
     author='Philippe Remy',
     license='MIT',
