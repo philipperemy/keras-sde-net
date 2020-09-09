@@ -18,6 +18,7 @@ pip install sdenet
 From the sources
 
 ```bash
+git clone https://github.com/philipperemy/keras-sde-net.git && cd keras-sde-net
 virtualenv -p python3 venv && source venv/bin/activate # optional but recommended.
 pip install -r requirements.txt && pip install -e . # install the package.
 ```
