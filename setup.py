@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from sdenet import VERSION
+VERSION = '1.0'
 
 setup(
     name='sdenet',
