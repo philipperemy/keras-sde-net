@@ -32,7 +32,7 @@ def main():
     parser.add_argument('--droprate', type=float, default=0.1, help='learning rate decay')
     parser.add_argument('--decreasing_lr', default=None, nargs='+', help='decreasing strategy')
     parser.add_argument('--decreasing_lr2', default=None, nargs='+', help='decreasing strategy')
-    parser.add_argument('--net_sigma', default=20, type=int, help='sigma coefficient for the diffusion')
+    parser.add_argument('--net_sigma', default=50, type=int, help='sigma coefficient for the diffusion')
     parser.add_argument('--net_save_dir', default='net', type=str, help='where to save the checkpoints')
     args = parser.parse_args()
     print(args)
