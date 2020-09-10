@@ -124,7 +124,7 @@ class SDENet(Model):
             fc(num_classes)
         ])
         self.deltat = 6. / self.layer_depth
-        self.sigma = 500
+        self.sigma = 50
 
     def __call__(self, x, training_diffusion=False):
         out = self.downsampling_layers(x)
