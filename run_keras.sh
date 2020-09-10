@@ -14,6 +14,6 @@ python -u sdenet/eval/eval_detection.py --pre_trained_net "save_sdenet_mnist/bes
 python -u sdenet/train/resnet_train.py --epochs 60 --dataset "svhn"  --imageSize 32 --decreasing_lr 20 40 --net_save_dir "save_resnet_svhn"
 python -u sdenet/eval/eval_detection.py --pre_trained_net "save_resnet_svhn/best_model.h5" --network "resnet" --dataset "svhn" --out_dataset "cifar10" --imageSize 32
 
-# SDENET - SVHN
-python -u sdenet/train/sdenet_train.py --epochs 60 --dataset "svhn"  --imageSize 32 --decreasing_lr 20 40 --lr2 0.005 --decreasing_lr2 10 30 --net_sigma 5 --net_save_dir "save_sdenet_svhn"
+# SDENET - SVHN sigma = 1 cf https://github.com/Lingkai-Kong/SDE-Net/issues/7
+python -u sdenet/train/sdenet_train.py --epochs 60 --dataset "svhn"  --imageSize 32 --decreasing_lr 20 40 --lr2 0.005 --decreasing_lr2 10 30 --net_sigma 1 --net_save_dir "save_sdenet_svhn"
 python -u sdenet/eval/eval_detection.py --pre_trained_net "save_sdenet_svhn/best_model.h5" --network "sdenet" --dataset "svhn" --out_dataset "cifar10" --imageSize 32
