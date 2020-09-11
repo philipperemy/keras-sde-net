@@ -204,21 +204,21 @@ AUPR Out:                  46.231%
 SVHN SDENET
 _________________________________
 
-Final Accuracy: 24261/25856 (93.83%)
+ Final Accuracy: 24339/25856 (94.13%)
 
 generate log  from out-of-distribution data
 calculate metrics for OOD
 OOD  Performance of Baseline detector
-TNR at TPR 95%:            55.568%
-AUROC:                     93.406%
-Detection acc:             87.942%
-AUPR In:                   97.538%
-AUPR Out:                  82.881%
+TNR at TPR 95%:            64.491%
+AUROC:                     94.358%
+Detection acc:             88.711%
+AUPR In:                   97.776%
+AUPR Out:                  87.517%
 calculate metrics for mis
 mis  Performance of Baseline detector
-TNR at TPR 95%:            61.798%
-AUROC:                     89.845%
-Detection acc:             85.974%
-AUPR In:                   99.183%
-AUPR Out:                  47.664%
+TNR at TPR 95%:            60.160%
+AUROC:                     88.955%
+Detection acc:             85.735%
+AUPR In:                   99.165%
+AUPR Out:                  45.268%
 ```
